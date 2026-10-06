@@ -293,10 +293,13 @@ class TinyDisplayRuntime:
                 min_interval=float(self.options.get(CONF_MIN_INTERVAL, DEFAULT_MIN_INTERVAL)),
                 max_interval=float(self.options.get(CONF_MAX_INTERVAL, DEFAULT_MAX_INTERVAL)),
                 keepalive=keepalive_for(self.driver),
-                # Always landscape: portrait is drawn by rotating the frame in
-                # the driver, and a panel that did honour the command would
-                # otherwise turn an already-turned picture a second time.
-                on_connect=on_connect_for(self.driver, landscape=True),
+                # Frames are turned in software, but the firmware draws its own
+                # disconnection banner and only the orientation command turns
+                # that -- so it still has to match the driver's orientation.
+                on_connect=on_connect_for(
+                    self.driver,
+                    landscape=not getattr(self.driver, "portrait", False),
+                ),
                 on_frame=self._note_frame,
             )
         except asyncio.CancelledError:
